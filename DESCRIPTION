@@ -1,0 +1,23 @@
+Package: rconnection
+Type: Package
+Title: Demonstration of Creation of Custom Connection
+Version: 0.2.9
+Authors@R: c(
+    person("Mike", "Cheng", role = c("aut", "cre", 'cph'), email = "mikefc@coolbutuseless.com")
+    )
+Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
+Description: Demonstration of creation of a custom connection.
+URL: https://github.com/coolbutuseless/rconnection
+BugReports: https://github.com/coolbutuseless/rconnection/issues
+License: MIT + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.3.1
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    bench
+Depends:
+    R (>= 3.4.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3

@@ -1,0 +1,60 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# rconnection
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/coolbutuseless/rconnection/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/rconnection/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+`rconnection` demonstrates how to implement a custom connection in R.
+
+This custom connection (`vfile()`) works similarly to the `file()` connection,
+and all code for this implementation is included in this repository.
+
+This code is licensed under the MIT License - feel free to share, fork and hack!
+
+## Installation
+
+You can install the development version of rconnection from [GitHub](https://github.com/coolbutuseless/rconnection) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("coolbutuseless/rconnection")
+```
+
+## Using `vfile()` to read/write binary data
+
+```{r example}
+library(rconnection)
+
+tmp <- tempfile()
+ref <- as.raw(1:255)
+writeBin(ref, vfile(tmp, verbosity = 1))
+tst <- readBin(vfile(tmp, verbosity = 1),  raw(), 1000)
+tst
+```
+
+
+## Using `vfile()` to read/write text data
+
+
+```{r}
+ref <- as.character(mtcars)
+writeLines(ref, vfile(tmp, verbosity = 1))
+tst <- readLines(vfile(tmp, verbosity = 1))
+tst
+```
+
