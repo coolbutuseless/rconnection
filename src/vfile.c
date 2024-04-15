@@ -288,8 +288,16 @@ int vfile_vfprintf(struct Rconn *rconn, const char* fmt, va_list ap) {
   // So when vsnprintf() overflows the given size, it returns the number of 
   // characters it couldn't write.  Tell it the buffer size is '0' and it
   // will just return how long a buffer would be needed to contain the string!
+  //
+  // Note: need to copy the 'va_list', since you can't (officially) use it twice!
+  // ubuntu platform complains
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int slen = vsnprintf((char *)(str_buf), 0, fmt, ap);
+  va_list apc;
+  va_copy(apc, ap);
+  // n = vsnprintf(p, size, fmt, apc);
+  int slen = vsnprintf((char *)(str_buf), 0, fmt, apc);
+  va_end(apc);
+  
   int wlen = slen;
   if (wlen > BUFSIZE) {
     warning("vfile_vfprintf(): Long string truncated to length = %i\n", BUFSIZE);
