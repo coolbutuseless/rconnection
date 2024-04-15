@@ -3,7 +3,9 @@ Type: Package
 Title: Demonstration of Creation of Custom Connection
 Version: 0.1.0
 Authors@R: c(
-    person("Mike", "Cheng", role = c("aut", "cre", 'cph'), email = "mikefc@coolbutuseless.com")
+    person("Mike", "Cheng", role = c("aut", "cre", 'cph'), email = "mikefc@coolbutuseless.com"),
+    person("Matthew", "Shotwell", role = c("aut"), 
+    comment = "Author of included documentation for 'Rconn' class")
     )
 Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
 Description: Demonstration of creation of a custom connection.
@@ -12,6 +14,11 @@ BugReports: https://github.com/coolbutuseless/rconnection/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.3.1
+Copyright: This package includes text Copyright © 2010 Matthew S. Shotwell
+    copied from <https://biostatmatt.com/R/R-conn-ints/index.html>:
+    "The text from this document may be copied, corrected or updated, and 
+    redistributed provided the author is listed among the authors of derivative 
+    publications."
 Suggests: 
     knitr,
     rmarkdown,

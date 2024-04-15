@@ -15,7 +15,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// From R source code: 'src/main/connections.c'
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // SEXP   R_new_custom_connection(
 //            const char *description,  // the filename related to this particular instance
 //            const char *mode,         // read/write/binarymode/textmode
@@ -23,7 +25,6 @@
 //            Rconnection *ptr          // Rconnection pointer
 //        );
 //
-//  --- C-level entry to create a custom connection object -- */
 // The returned value is the R-side instance. To avoid additional call to getConnection()
 //  the internal Rconnection pointer will be placed in ptr[0] if ptr is not NULL.
 //  It is the responsibility of the caller to customize callbacks in the structure,
@@ -31,44 +32,195 @@
 //  Also note that the resulting object has a finalizer, so any clean up (including after
 //  errors) is done by garbage collection - the caller may not free anything in the
 //  structure explicitly (that includes the con->private pointer!).
- 
 
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// From Matthew Shotwell
+// https://biostatmatt.com/R/R-conn-ints/C-Structures.html#C-Structures
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // struct Rconn {
-//     char* class;
-//     char* description;
-//     int enc; /* the encoding of 'description' */
-//     char mode[5];
-//     Rboolean text, isopen, incomplete, canread, canwrite, canseek, blocking, 
-// 	isGzcon;
-//     Rboolean (*open)(struct Rconn *);
-//     void (*close)(struct Rconn *); /* routine closing after auto open */
-//     void (*destroy)(struct Rconn *); /* when closing connection */
-//     int (*vfprintf)(struct Rconn *, const char *, va_list);
-//     int (*fgetc)(struct Rconn *);
-//     int (*fgetc_internal)(struct Rconn *);
-//     double (*seek)(struct Rconn *, double, int, int);
-//     void (*truncate)(struct Rconn *);
-//     int (*fflush)(struct Rconn *);
-//     size_t (*read)(void *, size_t, size_t, struct Rconn *);
-//     size_t (*write)(const void *, size_t, size_t, struct Rconn *);
-//     int nPushBack, posPushBack; /* number of lines, position on top line */
-//     char **PushBack;
-//     int save, save2;
-//     char encname[101];
-//     /* will be iconv_t, which is a pointer. NULL if not in use */
-//     void *inconv, *outconv;
-//     /* The idea here is that no MBCS char will ever not fit */
-//     char iconvbuff[25], oconvbuff[50], *next, init_out[25];
-//     short navail, inavail;
-//     Rboolean EOF_signalled;
-//     Rboolean UTF8out;
-//     void *id;
-//     void *ex_ptr;
-//     void *private;
-//     int status; /* for pipes etc */
-//     unsigned char *buff;
-//     size_t buff_len, buff_stored_len, buff_pos;
+//   /** class name (null terminated) **/
+//   char* class;
+//   
+//   /** description (null terminated), can be a filename, url, or other 
+//    identifier, depending on the connection type 
+//    **/
+//   char* description;
+//   int enc; /* the encoding of 'description' */
+//   
+//   /** file operation mode (null terminated) **/
+//   char mode[5];
+//   
+//   /** text       - true if connection operates on text
+//    isopen     - true if connection is open
+//    incomplete - used in @code{do_readLines}, @code{do_isincomplete}, 
+//    and text_vfprintf, From `?connections`: true if last 
+//    read was blocked, or for an output text connection whether 
+//    there is unflushed output
+//    canread    - true if connection is readable
+//    canwrite   - true if connection is writable
+//    canseek    - true if connection is seekable
+//    blocking   - true if connection reads are blocking
+//    isGzcon    - true if connection operates on gzip compressed data 
+//    **/
+//   Rboolean text, isopen, incomplete, canread, canwrite, canseek, blocking, 
+//   isGzcon;
+//   
+//   /** function pointers for I/O operations **/
+//   
+//   
+//   /** open - called when the connection should be opened
+//    args: struct Rconn * - an initialized connection to be opened
+//    return: Rboolean - true if connection successfully opened, false otherwise
+//    **/
+//   Rboolean (*open)(struct Rconn *);
+//   
+//   
+//   /** close - called when the connection should be closed
+//    args: struct Rconn * - a connection to be closed
+//    **/
+//   void (*close)(struct Rconn *); /* routine closing after auto open */
+//   
+//   
+//   /** destroy - called after the connection is closed in order to free memory, 
+//    and other cleanup tasks
+//    args: struct Rconn * - a connection to be closed
+//    **/
+//   void (*destroy)(struct Rconn *); /* when closing connection */
+//   
+//   
+//   /** vfprintf - variable argument list version of printf for a connection
+//    args: struct Rconn * - a connection where items should be printed
+//    const char *   - a format string in the style of the printf family
+//    va_list        - a variable argument list containing the items 
+//    referred to in the format string
+//    return: int - number of characters printed, negative on failure
+//    **/
+//   int (*vfprintf)(struct Rconn *, const char *, va_list);
+//   
+//   
+//   
+//   /** fgetc - get a (re-encoded) character from the connection
+//    args: struct Rconn * - a connection to be read
+//    return: int - a (re-encoded) character, or R_EOF
+//    **/
+//   int (*fgetc)(struct Rconn *);
+//   
+//   
+//   /** fgetc_internal - get a character from the connection
+//    args: struct Rconn * - a connection to be read
+//    return: int - a character, or R_EOF
+//    **/
+//   int (*fgetc_internal)(struct Rconn *);
+//   
+//   
+//   /** seek - seek to a new position in the connection
+//    args: struct Rconn * - a connection to seek
+//    double         - offset to seek relative to origin, apparently 
+//    double is used here to avoid using 
+//    integer types, i.e. long int, which is 
+//    the prototype of the corresponding parameter 
+//    in fseek, as defined in stdio.h
+//    int            - the origin of seeking, 1 (and any except 2 and
+//    3) if relative to the beginning of the 
+//    connection, 2 if relative to the current 
+//    connection read/write position, 3 if relative to 
+//    the end of the connection
+//    int            - currently only used by file_seek to select 
+//    the read or write position when the offset is NA
+//    return: double - the read/write position of the connection before 
+//    seeking, negative on error double is again used to 
+//    avoid integer types
+//    **/
+//   double (*seek)(struct Rconn *, double, int, int);
+//   
+//   
+//   /** truncate - truncate the connection at the current read/write position.
+//    args: struct Rconn * - a connection to be truncated
+//    **/
+//   void (*truncate)(struct Rconn *);
+//   
+//   
+//   /** fflush - called when the connection should flush internal read/write buffers
+//    args: struct Rconn * - a connection to be flushed
+//    return: int - zero on success, non-zero otherwise
+//    **/
+//   int (*fflush)(struct Rconn *);
+//   
+//   
+//   /** read - read in the style of fread
+//    args: void *         - buffer where data is read into
+//    size_t         - size (in bytes) of each item to be read
+//    size_t         - number of items to be read
+//    struct Rconn * - a connection to be read
+//    return: size_t - number of _items_ read
+//    **/
+//   size_t (*read)(void *, size_t, size_t, struct Rconn *);
+//   
+//   
+//   /** write - write in the style of fwrite
+//    args: void *         - buffer containing data to be written
+//    size_t         - size (in bytes) of each item to be written
+//    size_t         - number of items to be written
+//    struct Rconn * - a connection to be written
+//    return: size_t - number of _items_ written
+//    **/
+//   size_t (*write)(const void *, size_t, size_t, struct Rconn *);
+//   
+//   /** cached and pushBack data
+//    nPushBack   - number of lines of cached/pushBack storage
+//    posPushBack - read position on current line of storage
+//    PushBack    - cached/pushBack data lines ('\n' delimited)
+//    save        - used to store the character following a \n, if not \r
+//    save2       - used to store a character from Rconn_ungetc
+//    **/
+//   int nPushBack, posPushBack; /* number of lines, position on top line */
+//   char **PushBack;
+//   int save, save2;
+//   
+//   /** character re-encoding with iconv
+//    encname   - character encoding string (null terminated), this string 
+//    must be one of the standard encoding strings used by [lib]iconv
+//    inconv    - input character encoding context (iconv_t)
+//    outconv   - output character encoding context (iconv_t)
+//    iconvbuff - input character encoding buffer
+//    oconvbuff - output character encoding buffer
+//    next      - only used by dummy_fgetc, points to the next re-encoded 
+//    character for reading
+//    init_out  - storage for output iconv initialization sequence 
+//    navail    - iconv buffer offset
+//    inavail   - iconv buffer offset
+//    EOF_signalled - true if EOF reached
+//    UTF8out   - true if connection writes UTF8 encoded characters
+//    **/
+//   char encname[101];
+//   /* will be iconv_t, which is a pointer. NULL if not in use */
+//   void *inconv, *outconv;
+//   /* The idea here is that no MBCS char will ever not fit */
+//   char iconvbuff[25], oconvbuff[50], *next, init_out[25];
+//   short navail, inavail;
+//   Rboolean EOF_signalled;
+//   Rboolean UTF8out;
+//   
+//   /** finalization pointers
+//    id     - unique id, used to "ensure that the finalizer does not 
+//    try to close connection after it is alread closed"
+//    (quoted from source code), but also to identify the
+//    connection to be finalized. Using an arbitrary but
+//    unique id here is clever, it means the connections 
+//    internals are further protected from passing references 
+//    to connection structures.
+//    ex_ptr - external pointer, referenced by finalizer code
+//    **/
+//   void *id;
+//   void *ex_ptr;
+//   
+//   /** private user data (i.e. FILE *, offsets etc.) **/
+//   void *private;
 // };
+
+
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Vfile state. 
@@ -101,6 +253,8 @@ typedef struct {
 // Notes:
 //   - Supported modes: r, rt, w, wt, rb, wb
 //   - unsupported modes: append, simultaneous read/write
+//
+// @return Rboolean - true if connection successfully opened, false otherwise
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Rboolean vfile_open(struct Rconn *rconn) {
   
@@ -184,7 +338,9 @@ void vfile_destroy(struct Rconn *rconn) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Not sure what this is for. Just call the standard 'fgetc' callback.
+// get a character from the connection
+// This doesn't seem to be called for use cases I've tried.
+// @return int - a character, or R_EOF
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int vfile_fgetc_internal(struct Rconn *rconn) {
   
@@ -197,6 +353,21 @@ int vfile_fgetc_internal(struct Rconn *rconn) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // seek()
 //   - vfile() will not support seeking
+// @param double - offset to seek relative to origin, apparently 
+//        double is used here to avoid using 
+//        integer types, i.e. long int, which is 
+//        the prototype of the corresponding parameter 
+//        in fseek, as defined in stdio.h
+// @param int - the origin of seeking, 1 (and any except 2 and
+//        3) if relative to the beginning of the 
+//        connection, 2 if relative to the current 
+//        connection read/write position, 3 if relative to 
+//        the end of the connection
+// @param int - currently only used by file_seek to select 
+//        the read or write position when the offset is NA
+// @return  double - the read/write position of the connection before 
+//          seeking, negative on error double is again used to 
+//          avoid integer types
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double vfile_seek(struct Rconn *rconn, double x, int y, int z) {
   error("vfile_seek() - not supported");
@@ -204,7 +375,7 @@ double vfile_seek(struct Rconn *rconn, double x, int y, int z) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// truncate
+// truncate the connection at the current read/write position.
 //   - vfile() will not support truncation
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void vfile_truncate(struct Rconn *rconn) {
@@ -212,9 +383,10 @@ void vfile_truncate(struct Rconn *rconn) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// fflush
+// called when the connection should flush internal read/write buffers
 //   - vfile will not suport flush()
-//   - a flush of buffers to file will only occur during 'close()'
+//
+// @return int zero on success. Non-zero otherwise
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int vfile_fflush(struct Rconn *rconn) {
   error("vfile_fflush() - not supported\n");
@@ -239,6 +411,9 @@ size_t vfile_read(void *dst, size_t size, size_t nitems, struct Rconn *rconn) {
 // readLines()
 //   - fgetc() called until '\n'. this counts as 1 line.
 //   - when EOF reached, return -1
+//
+// get a (re-encoded) character from the connection
+// @return int - a (re-encoded) character, or R_EOF
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int vfile_fgetc(struct Rconn *rconn) {
   
@@ -268,12 +443,12 @@ size_t vfile_write(const void *src, size_t size, size_t nitems, struct Rconn *rc
 #define BUFSIZE 32768
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// writeLines
+// Used in writeLines
+// @return int - number of characters printed, negative on failure
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int vfile_vfprintf(struct Rconn *rconn, const char* fmt, va_list ap) {
   
   vfile_state *vstate = (vfile_state *)rconn->private;
-  if (vstate->verbosity > 0) Rprintf("vfile_vfprintf(fmt = '%s')\n", fmt);
   
   unsigned char str_buf[BUFSIZE + 1];
   
@@ -310,9 +485,15 @@ int vfile_vfprintf(struct Rconn *rconn, const char* fmt, va_list ap) {
     error("vfile_vfprintf(): error in 'vsnprintf()");
   }
   
+  unsigned char display_buf[40+1];
+  strncpy((char *)display_buf, (char *)str_buf, 40);
+  display_buf[40] = '\0';
+  if (vstate->verbosity > 0) Rprintf("vfile_vfprintf('%s ...')\n", display_buf);
+  
+  
   fwrite(str_buf, 1, wlen, vstate->fp);
   
-  return wlen; // Not sure what is being returned here? bytes written?
+  return wlen;
 }
 
   
@@ -337,6 +518,19 @@ SEXP vfile_(SEXP description_, SEXP mode_, SEXP verbosity_) {
   Rconnection con = NULL;
   SEXP rc = PROTECT(R_new_custom_connection(CHAR(STRING_ELT(description_, 0)), "rb", "vfile", &con));
   
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // text       - true if connection operates on text
+  // isopen     - true if connection is open
+  // incomplete - used in @code{do_readLines}, @code{do_isincomplete}, 
+  //              and text_vfprintf, From `?connections`: true if last 
+  //              read was blocked, or for an output text connection whether 
+  //              there is unflushed output
+  // canread    - true if connection is readable
+  // canwrite   - true if connection is writable
+  // canseek    - true if connection is seekable
+  // blocking   - true if connection reads are blocking
+  // isGzcon    - true if connection operates on gzip compressed data 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   con->isopen     = FALSE; // not open initially.
   con->incomplete =  TRUE; // NFI. Data write hasn't been completed?
   con->text       = FALSE; // binary connection by default
