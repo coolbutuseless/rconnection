@@ -27,9 +27,9 @@
 #' dat <- as.raw(1:255)
 #' writeBin(dat, vfile(tmp))
 #' readBin(vfile(tmp),  raw(), 1000)
-#' #txt <- as.character(mtcars)
-#' #writeLines(txt, vfile(tmp))
-#' #readLines(vfile(tmp))
+#' # txt <- as.character(mtcars)
+#' # writeLines(txt, vfile(tmp))
+#' # readLines(vfile(tmp))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 vfile <- function(description, open = "", verbosity = 1) {
   .Call(
