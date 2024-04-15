@@ -6,8 +6,13 @@ test_that("vfile works", {
   tst <- readBin(vfile(tmp, verbosity = 0),  raw(), 1000)
   expect_identical(tst, ref)
   
-  # ref <- as.character(mtcars)
-  # writeLines(ref, vfile(tmp, verbosity = 0))
-  # tst <- readLines(vfile(tmp, verbosity = 0))
-  # expect_identical(tst, ref)
+  if (TRUE) {
+    tmp <- tempfile()
+    ref <- as.character(mtcars)
+    expect_no_error({
+      writeLines(ref, vfile(tmp, verbosity = 0))
+    })
+    # tst <- readLines(vfile(tmp, verbosity = 0))
+    # expect_identical(tst, ref)
+  }
 })
