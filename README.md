@@ -60,17 +60,17 @@ ref <- as.raw(1:255)
 writeBin(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmplmbbRH/file17d807ee76a14', mode = 'wb')
+    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmpfuqary/file1806956f032ed', mode = 'wb')
     #> vfile_write(size = 1, nitems = 255)
-    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmplmbbRH/file17d807ee76a14')
+    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmpfuqary/file1806956f032ed')
 
 ``` r
 tst <- readBin(vfile(tmp, verbosity = 1),  raw(), 1000)
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmplmbbRH/file17d807ee76a14', mode = 'rb')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed', mode = 'rb')
     #> vfile_read(size = 1, nitems = 1000)
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmplmbbRH/file17d807ee76a14')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed')
 
 ``` r
 tst
@@ -104,7 +104,7 @@ ref <- as.character(mtcars)
 writeLines(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmplmbbRH/file17d807ee76a14', mode = 'wt')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed', mode = 'wt')
     #> vfile_vfprintf('c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3,  ...')
     #> vfile_vfprintf('c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, ...')
     #> vfile_vfprintf('c(160, 160, 108, 258, 360, 225, 360, 146 ...')
@@ -116,14 +116,14 @@ writeLines(ref, vfile(tmp, verbosity = 1))
     #> vfile_vfprintf('c(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...')
     #> vfile_vfprintf('c(4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, ...')
     #> vfile_vfprintf('c(4, 4, 1, 1, 2, 1, 4, 2, 2, 4, 4, 3, 3, ...')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmplmbbRH/file17d807ee76a14')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed')
 
 ``` r
 tst <- readLines(vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmplmbbRH/file17d807ee76a14', mode = 'rt')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmplmbbRH/file17d807ee76a14')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed', mode = 'rt')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed')
 
 ``` r
 tst
@@ -476,10 +476,11 @@ and included here for posterity.
 
   - R v3.3.0 NEWS file notes includes
 
-  “The connections interface now includes a function R_GetConnection()
-  which allows packages implementing connections to convert R connection
-  objects to Rconnection handles. Code which previously used the
-  low-level R-internal getConnection() entry point should switch.”
+  “The connections API now includes a function R_GetConnection() which
+  allows packages implementing connections to convert R connection
+  objects to Rconnection handles used in the API. Code which previously
+  used the low-level R-internal getConnection() entry point should
+  switch to the official API.”
 
 - 2017-06-12
 
@@ -495,6 +496,19 @@ and included here for posterity.
     - `getConnection`
   - This change means that packages submitted to CRAN will receive a
     check `NOTE` if they use these functions
+
+- 2017-06-12
+
+  - Commit message by **ripley**: [“there is no connections API,
+    official or
+    otherwise”](https://github.com/wch/r-source/commit/7e9889fa9bb9269ffadfe67f3ded4bdca51b8ed9)
+  - At the time of around R3.4.0, the `NEWS` entry for Rv3.3.0
+    (originally written around 2016-05-03) was changed to read
+
+  “The connections interface now includes a function R_GetConnection()
+  which allows packages implementing connections to convert R connection
+  objects to Rconnection handles. Code which previously used the
+  low-level R-internal getConnection() entry point should switch.”
 
 - 2018-06-12
 

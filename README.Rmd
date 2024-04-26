@@ -405,11 +405,12 @@ struct Rconn {
 * 2016-05-03
     * R v3.3.0 NEWS file notes includes
 
-    "The connections interface now includes a function
-    R_GetConnection() which allows packages implementing connections
-    to convert R connection objects to Rconnection handles. Code
-    which previously used the low-level R-internal getConnection()
-    entry point should switch."
+    "The connections API now includes a function
+    R_GetConnection() which allows packages implementing
+    connections to convert R connection objects to
+    Rconnection handles used in the API. Code which previously
+    used the low-level R-internal getConnection() entry point
+    should switch to the official API."
 
 * 2017-06-12
     * Commit message by **ripley** in R source code ["some more non-API entry points"](https://github.com/wch/r-source/commit/e55605767570fc424b6c281e0b7489e8dc77b53f)
@@ -420,6 +421,17 @@ struct Rconn {
         * `R_GetConnection`
         * `getConnection`
     * This change means that packages submitted to CRAN will receive a check `NOTE` if they use these functions
+
+* 2017-06-12
+    * Commit message by **ripley**: ["there is no connections API, official or otherwise"](https://github.com/wch/r-source/commit/7e9889fa9bb9269ffadfe67f3ded4bdca51b8ed9)
+    * At the time of around R3.4.0, the `NEWS` entry for Rv3.3.0 (originally 
+      written around 2016-05-03) was changed to read
+
+    "The connections interface now includes a function
+    R_GetConnection() which allows packages implementing connections
+    to convert R connection objects to Rconnection handles. Code
+    which previously used the low-level R-internal getConnection()
+    entry point should switch."
 
 * 2018-06-12
     * Joris Meys notes in [R-pkg-devel email](https://stat.ethz.ch/pipermail/r-package-devel/2018q2/002811.html)
