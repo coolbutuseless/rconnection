@@ -60,17 +60,17 @@ ref <- as.raw(1:255)
 writeBin(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmpfuqary/file1806956f032ed', mode = 'wb')
+    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmp05PFDi/file94540320da1', mode = 'wb')
     #> vfile_write(size = 1, nitems = 255)
-    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmpfuqary/file1806956f032ed')
+    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmp05PFDi/file94540320da1')
 
 ``` r
 tst <- readBin(vfile(tmp, verbosity = 1),  raw(), 1000)
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed', mode = 'rb')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1', mode = 'rb')
     #> vfile_read(size = 1, nitems = 1000)
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1')
 
 ``` r
 tst
@@ -104,7 +104,7 @@ ref <- as.character(mtcars)
 writeLines(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed', mode = 'wt')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1', mode = 'wt')
     #> vfile_vfprintf('c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3,  ...')
     #> vfile_vfprintf('c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, ...')
     #> vfile_vfprintf('c(160, 160, 108, 258, 360, 225, 360, 146 ...')
@@ -116,14 +116,14 @@ writeLines(ref, vfile(tmp, verbosity = 1))
     #> vfile_vfprintf('c(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...')
     #> vfile_vfprintf('c(4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, ...')
     #> vfile_vfprintf('c(4, 4, 1, 1, 2, 1, 4, 2, 2, 4, 4, 3, 3, ...')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1')
 
 ``` r
 tst <- readLines(vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed', mode = 'rt')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpfuqary/file1806956f032ed')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1', mode = 'rt')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1')
 
 ``` r
 tst
@@ -429,11 +429,11 @@ and included here for posterity.
   - Commit by **luke** in R source code [“Added R_WriteConnection
     function”](https://github.com/wch/r-source/commit/f41e7cc8451afaa62e24b252bd5003528d799e02)
 
-  This function allows C code to call the write method of a
-  connection.  
-  It is mainly intended as a means for C code to do a buffered write to
-  sockets, but could be the start of a more extensive C-level connection
-  API. LT
+  > This function allows C code to call the write method of a
+  > connection.  
+  > It is mainly intended as a means for C code to do a buffered write
+  > to sockets, but could be the start of a more extensive C-level
+  > connection API. LT
 
 - 2013-01-16
 
@@ -476,11 +476,11 @@ and included here for posterity.
 
   - R v3.3.0 NEWS file notes includes
 
-  “The connections API now includes a function R_GetConnection() which
-  allows packages implementing connections to convert R connection
-  objects to Rconnection handles used in the API. Code which previously
-  used the low-level R-internal getConnection() entry point should
-  switch to the official API.”
+  > “The connections API now includes a function R_GetConnection() which
+  > allows packages implementing connections to convert R connection
+  > objects to Rconnection handles used in the API. Code which
+  > previously used the low-level R-internal getConnection() entry point
+  > should switch to the official API.”
 
 - 2017-06-12
 
@@ -505,10 +505,28 @@ and included here for posterity.
   - At the time of around R3.4.0, the `NEWS` entry for Rv3.3.0
     (originally written around 2016-05-03) was changed to read
 
-  “The connections interface now includes a function R_GetConnection()
-  which allows packages implementing connections to convert R connection
-  objects to Rconnection handles. Code which previously used the
-  low-level R-internal getConnection() entry point should switch.”
+  > “The connections interface now includes a function R_GetConnection()
+  > which allows packages implementing connections to convert R
+  > connection objects to Rconnection handles. Code which previously
+  > used the low-level R-internal getConnection() entry point should
+  > switch.”
+
+- 2017-06-13
+
+  - Gabor Csardi [R-devel
+    email](https://stat.ethz.ch/pipermail/r-devel/2017-June/074426.html)
+    asked “if package authors are allowed to create custom connections”
+  - Simon Urbanek was the only person to
+    [respond](https://stat.ethz.ch/pipermail/r-devel/2017-June/074427.html)
+    saying
+
+  > Unfortunately, recent somewhat careless changes in R-devel have
+  > triggered a discussion about the connection API which was broken by
+  > that commit so R-devel cannot be used reliably. The API was
+  > precisely intended to be used by packages so it’s ok to use it on
+  > CRAN. Although I cannot speak for the author, I suspect this change
+  > merely helps to flag where the API is used to follow the trail of
+  > breakage in R-devel.
 
 - 2018-06-12
 
@@ -528,18 +546,6 @@ and included here for posterity.
   > contact them. Therefore there is no current way for me to update
   > readr on CRAN at this time
 
-- 2020-03-13
-
-  - Commit message by **ripley** in R source code [NEWS.3 file ’Changes
-    in R
-    3.3.0](https://github.com/wch/r-source/blob/ab9c4114cd774d359f6d4c3b4a69e7ba9d2864c8/doc/NEWS.3#L3612)
-
-  > The connections interface now includes a function R_GetConnection()
-  > which allows packages implementing connections to convert R
-  > connection objects to Rconnection handles. Code which previously
-  > used the low-level R-internal getConnection() entry point should
-  > switch.
-
 - 2024-04-24
 
   - Hadley reflects on the connections API [R-devel
@@ -557,3 +563,18 @@ and included here for posterity.
   > that played out and where that stands now. But there was and is no
   > viable option other than to agree to disagree. There is really no
   > upside to re-litigating this now.
+
+- Connections mentioned in [Writing R
+  extensions](https://cran.r-project.org/doc/manuals/R-exts.html)
+
+- In the section on [external
+  pointers](https://cran.r-project.org/doc/manuals/R-exts.html#External-pointers-and-weak-references)
+
+  > R’s connections provide another example of using external pointers
+
+- In section [6.18 Organization of Header
+  Files](https://cran.r-project.org/doc/manuals/R-exts.html#Organization-of-header-files-1)
+
+  > Facilities for defining custom connection implementations are
+  > provided in R_ext/Connections.h, but make sure you consult the file
+  > before use.
