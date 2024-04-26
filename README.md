@@ -59,17 +59,17 @@ ref <- as.raw(1:255)
 writeBin(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpLJVICU/file169308b4f0df', mode = 'wb')
+    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpWTxNjd/file16c914938170a', mode = 'wb')
     #> vfile_write(size = 1, nitems = 255)
-    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpLJVICU/file169308b4f0df')
+    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpWTxNjd/file16c914938170a')
 
 ``` r
 tst <- readBin(vfile(tmp, verbosity = 1),  raw(), 1000)
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df', mode = 'rb')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpWTxNjd/file16c914938170a', mode = 'rb')
     #> vfile_read(size = 1, nitems = 1000)
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpWTxNjd/file16c914938170a')
 
 ``` r
 tst
@@ -103,7 +103,7 @@ ref <- as.character(mtcars)
 writeLines(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df', mode = 'wt')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpWTxNjd/file16c914938170a', mode = 'wt')
     #> vfile_vfprintf('c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3,  ...')
     #> vfile_vfprintf('c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, ...')
     #> vfile_vfprintf('c(160, 160, 108, 258, 360, 225, 360, 146 ...')
@@ -115,14 +115,14 @@ writeLines(ref, vfile(tmp, verbosity = 1))
     #> vfile_vfprintf('c(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...')
     #> vfile_vfprintf('c(4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, ...')
     #> vfile_vfprintf('c(4, 4, 1, 1, 2, 1, 4, 2, 2, 4, 4, 3, 3, ...')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpWTxNjd/file16c914938170a')
 
 ``` r
 tst <- readLines(vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df', mode = 'rt')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpWTxNjd/file16c914938170a', mode = 'rt')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpWTxNjd/file16c914938170a')
 
 ``` r
 tst
@@ -165,17 +165,18 @@ StackOverflow](https://stackoverflow.com/questions/30445875/what-exactly-is-a-co
 
 ## R Packages which implement connections
 
-- `{rconnection}` This package! [rconnection on
-  Github](https://github.com/coolbutuseless/rconnection)
-- [zstdlite](https://github.com/coolbutuseless/zstdlite) implements a
-  `zstdfile()` connection for read/write of compressed data
-- [rmonocypher](https://github.com/coolbutuseless/rmonocypher)
-  implements a `cryptfile()` connection for read/write of encypted data
-- [archive](https://cran.r-project.org/package=archive)
-- [curl](https://cran.r-project.org/package=curl)
-- And base R implements: `gzfile()`, `bzfile()`, `xzfile()`, `file()`,
-  `url()`, `unz()`, `pipe()`, `fifo()`, `socketConnection()`,
-  `textConnection()`
+| Package     | Connection                                        | Description                                                                     | Notes                     |
+|-------------|---------------------------------------------------|---------------------------------------------------------------------------------|---------------------------|
+| curl        | `curl()`                                          | Drop-in replacement for base url that supports https, ftps, gzip, deflate, etc. |                           |
+| rconnection | `vfile()`                                         | Demonstration package showing how to code connections                           | allows nested connections |
+| zstdlite    | `zstdfile()`                                      | Like `gzfile()` but with Zstandard compression                                  | allows nested connections |
+| rmonocypher | `cryptfile()`                                     | Read/write with added encryption                                                | allows nested connections |
+| base R      | `file()`, `bzfile()`, `gzfile()`, `xzfile()`      | Files and compressed files                                                      |                           |
+| base R      | `gzcon()`                                         | gzipped data read/write to other connections                                    | allows nested connections |
+| base R      | `unz()`                                           | Extract individual files from `*.zip`                                           |                           |
+| base R      | `socketConnection()`, `pipe()`, `fifo()`, `url()` | Non-file endpoints                                                              |                           |
+| base R      | `textConnection()`                                |                                                                                 |                           |
+| base R      | `rawConnection()`                                 |                                                                                 |                           |
 
 ## Base R functions supporting connections
 
@@ -216,6 +217,8 @@ compressed, emcrypted data to a socket” using:
 ``` r
 saveRDS(mtcars, zstdfile(cryptfile(socketConnection(...), key = "my secret")))
 ```
+
+## Discussion on `R-devel` and `R-package-devel` mailing lists
 
 ## The `Rconn` data structure
 

@@ -109,15 +109,21 @@ From [Jeroen Ooms on StackOverflow](https://stackoverflow.com/questions/30445875
 
 ## R Packages which implement connections
 
-* `{rconnection}` This package! [rconnection on Github](https://github.com/coolbutuseless/rconnection)
-* [zstdlite](https://github.com/coolbutuseless/zstdlite) implements a `zstdfile()` connection for read/write
-  of compressed data
-* [rmonocypher](https://github.com/coolbutuseless/rmonocypher) implements a `cryptfile()` 
-  connection for read/write of encypted data
-* [archive](https://cran.r-project.org/package=archive)
-* [curl](https://cran.r-project.org/package=curl)
-* And base R implements: `gzfile()`, `bzfile()`, `xzfile()`, `file()`, `url()`, 
-    `unz()`, `pipe()`, `fifo()`, `socketConnection()`, `textConnection()`
+| Package     | Connection                                        | Description                                                                         | Notes                     |
+|-------------|---------------------------------------------------|-------------------------------------------------------------------------------------|---------------------------|
+| curl        | `curl()`                                          | Drop-in replacement for base   url   that supports https, ftps, gzip, deflate, etc. |                           |
+| rconnection | `vfile()`                                         | Demonstration package showing how to code connections                               | allows nested connections |
+| zstdlite    | `zstdfile()`                                      | Like `gzfile()` but with Zstandard compression                                      | allows nested connections |
+| rmonocypher | `cryptfile()`                                     | Read/write with added encryption                                                    | allows nested connections |
+| base R      | `file()`, `bzfile()`, `gzfile()`, `xzfile()`      | Files and compressed files                                                          |                           |
+| base R      | `gzcon()`                                         | gzipped data read/write to other connections                                        | allows nested connections |
+| base R      | `unz()`                                           | Extract individual files from `*.zip`                                               |                           |
+| base R      | `socketConnection()`, `pipe()`, `fifo()`, `url()` | Non-file endpoints                                                                  |                           |
+| base R      | `textConnection()`                                |                                                                                     |                           |
+| base R      | `rawConnection()`                                 |                                                                                     |                           |
+
+
+
 
 ## Base R functions supporting connections
 
@@ -156,6 +162,7 @@ saveRDS(mtcars, zstdfile(cryptfile(socketConnection(...), key = "my secret")))
 ```
 
 
+## Discussion on `R-devel` and `R-package-devel` mailing lists
 
 
 ## The `Rconn` data structure
