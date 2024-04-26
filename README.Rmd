@@ -19,9 +19,10 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/coolbutuseless/rconnection/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/rconnection/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`{rconnection}` is a demonstration package implementing a custom connection in R `vfile()`
+`{rconnection}` is a demonstration package implementing a custom connection in R 
+and documenting what I know about connections in general.
 
-(`vfile()`) works similarly to the `file()` connection except it is verbose about
+`vfile()` works similarly to the `file()` connection except it is verbose about
 which connection callback is being used internally, and it has fewer features e.g.
 it does not support file append or seek etc.
 
@@ -161,8 +162,6 @@ to a socket" using:
 saveRDS(mtcars, zstdfile(cryptfile(socketConnection(...), key = "my secret")))
 ```
 
-
-## Discussion on `R-devel` and `R-package-devel` mailing lists
 
 
 ## The `Rconn` data structure
@@ -359,4 +358,95 @@ struct Rconn {
 };
 ```
 
+
+## Timeline of development of connections in R
+
+* 2000-12-02
+    * Commit message by **ripley** in R source code ["add connections, phase I"](https://github.com/wch/r-source/blame/trunk/src/main/connections.c#L2)
+
+* 2001 Jan (R v1.2.0)
+    * Connections announced in [R Newsletter Vol 1, No. 1, January 2001 (page 16-17)](http://cran.r-project.org/doc/Rnews/Rnews_2001-1.pdf)
+
+* 2002-03-29
+    * Commit by **luke** in R source code ["Added R_WriteConnection function"](https://github.com/wch/r-source/commit/f41e7cc8451afaa62e24b252bd5003528d799e02)
+    
+    
+    This function allows C code to call the write method of a connection.  
+    It is mainly intended as a means for C code to do a
+    buffered write to sockets, but could be the start of a more
+    extensive C-level connection API.  LT 
+
+* 2013-01-16
+    * Commit by **ripley** in R source code ["bigger list of non-API calls"](https://github.com/wch/r-source/commit/70a2a36be719dbcd0ada79a7ab47833ccd42819c)
+    * `R_WriteConnection()` added to list of non-API calls
+
+* 2013-01-30
+    * Commit by **ripley** in R source code ["more hiding"](https://github.com/wch/r-source/commit/a3b6b31d46f0382d026bec441c345706092dd60d)
+    * `R_WriteConnection()` is removed from list of non-API calls
+
+* 2013-02-21
+    * Commit by **urbaneks** in R source code ["add API to create custom connections"](https://github.com/wch/r-source/commit/41b64b12f36851cb87e9132612591d623c217443)
+    * `Connections.h` moved from `src/include/Connections.h` to `src/include/R_ext/Connections.h`
+    * Addition of `R_ReadConnection()`
+    * Addition of `R_new_custom_connection()`
+
+* 2013-03-23
+    * Commit by **urbaneks** in R source code [NEWS.rd "add basic docs for r62016"](https://github.com/wch/r-source/commit/085b5940fae119633d9a2583efa4fabfca241fff)
+
+    > It is now possible to write custom connection
+      implementations outside core R using \file{R_ext/Connections.h}.
+      Please note that the implementation of connections is still
+      considered internal and may change in the future (see the above
+      file for details).
+
+* 2016-01-21
+    * Duncan Murdoch suggests to `call R from C to do the I/O` for a connection [R-pkg-devel email](https://stat.ethz.ch/pipermail/r-package-devel/2016q1/000648.html)
+
+
+* 2017-06-12
+    * Commit message by **ripley** in R source code ["some more non-API entry points"](https://github.com/wch/r-source/commit/e55605767570fc424b6c281e0b7489e8dc77b53f)
+    * The following names added to `sotools.c` to emit a `NOTE` when found in compiled packages:
+        * `R_new_custom_connection`
+        * `R_ReadConnection`
+        * `R_WriteConnection`
+        * `R_GetConnection`
+        * `getConnection`
+    * This change means that packages submitted to CRAN will receive a check `NOTE` if they use these functions
+
+* 2018-06-12
+    * Joris Meys notes in [R-pkg-devel email](https://stat.ethz.ch/pipermail/r-package-devel/2018q2/002811.html)
+
+    > [the R_GetConnection()] function has been part of the API at one point
+    
+    * And references Jim Hester's comments in a `{readr}` [github issue](https://github.com/tidyverse/readr/issues/856#issuecomment-391787058)
+  
+    > readr has used R connections for multiple years, since before this check 
+    > existed and removing the R connection functionality would break existing 
+    > packages. I wrote a reply to that effect but have had no reply from 
+    > CRAN one way or the other despite repeated attempts to contact them.
+    > Therefore there is no current way for me to update readr on CRAN at this time
+
+* 2020-03-13
+    * Commit message by **ripley** in R source code [NEWS.3 file 'Changes in R 3.3.0](https://github.com/wch/r-source/blob/ab9c4114cd774d359f6d4c3b4a69e7ba9d2864c8/doc/NEWS.3#L3612)
+    
+    > The connections interface now includes a function
+    > R_GetConnection() which allows packages implementing connections
+    > to convert R connection objects to Rconnection handles. Code
+    > which previously used the low-level R-internal getConnection()
+    > entry point should switch.
+
+* 2024-04-24
+    * Hadley reflects on the connections API [R-devel email](https://stat.ethz.ch/pipermail/r-devel/2024-April/083356.html)
+    
+    > It was documented in R-exts only to be
+    > later removed, including expunging mentions of it in the news. 
+    
+* 2024-04-24
+    * Luke Tierney in response to Hadley [R-devel email](https://stat.ethz.ch/pipermail/r-devel/2024-April/083363.html)
+    
+    > There are several R-core
+    > members who also are not happy about how that played out and where
+    > that stands now. But there was and is no viable option other than to
+    > agree to disagree. There is really no upside to re-litigating this
+    > now.
 
