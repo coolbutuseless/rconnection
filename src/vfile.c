@@ -228,8 +228,10 @@
 //     passed to each callback function
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 typedef struct {
-  FILE *fp; 
-  int verbosity;
+  Rboolean is_file;  // Is this a file or a connection we're writing to?
+  FILE *fp;          // FilePointer if accessing a file
+  Rconnection inner; // inner connection if accessing a connection
+  int verbosity;     // For debugging!
 } vfile_state;
 
 
@@ -286,17 +288,35 @@ Rboolean vfile_open(struct Rconn *rconn) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Setup file pointer
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  FILE *fp;
   if (rconn->canread) {
-    fp = fopen(rconn->description, "rb");
+    if (vstate->is_file) {
+      vstate->fp = fopen(rconn->description, "rb");
+      if (vstate->fp == NULL) {
+        error("vfile_(): Couldn't open input file '%s' with mode '%s'", rconn->description, rconn->mode);
+      }
+    } else {
+      memset(vstate->inner->mode, '\0', 5);
+      strcpy(vstate->inner->mode, "rb");
+      int res = vstate->inner->open(vstate->inner);
+      if (!res || !vstate->inner->isopen) {
+        error("vfile_(): Couldn't open connection for reading");
+      }
+    }
   } else {
-    fp = fopen(rconn->description, "wb");
+    if (vstate->is_file) {
+      vstate->fp = fopen(rconn->description, "wb");
+      if (vstate->fp == NULL) {
+        error("vfile_(): Couldn't open output file '%s' with mode '%s'", rconn->description, rconn->mode);
+      }
+    } else {
+      memset(vstate->inner->mode, '\0', 5);
+      strcpy(vstate->inner->mode, "wb");
+      int res = vstate->inner->open(vstate->inner);
+      if (!res || !vstate->inner->isopen) {
+        error("vfile_(): Couldn't open connection for writing");
+      }
+    }
   }
-  if (fp == NULL) {
-    error("vfile_(): Couldn't open input file '%s' with mode '%s'", rconn->description, rconn->mode);
-  }
-  
-  vstate->fp = fp;
   
   return TRUE;
 }
@@ -317,10 +337,14 @@ void vfile_close(struct Rconn *rconn) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Close the file
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (vstate->fp) {
+  if (vstate->is_file && vstate->fp) {
     fclose(vstate->fp);
     vstate->fp = NULL;  
   }
+  if (!vstate->is_file) {
+    vstate->inner->close(vstate->inner);
+  }
+  
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -401,7 +425,24 @@ size_t vfile_read(void *dst, size_t size, size_t nitems, struct Rconn *rconn) {
   vfile_state *vstate = (vfile_state *)rconn->private;
   if (vstate->verbosity > 0) Rprintf("vfile_read(size = %zu, nitems = %zu)\n", size, nitems);
   
-  size_t nread = fread(dst, size, nitems, vstate->fp);
+  if (vstate->is_file && feof(vstate->fp)) {
+    return 0;
+  }
+  if (!vstate->is_file && vstate->inner->EOF_signalled) {
+    return 0;
+  }
+  
+  size_t n = size * nitems;
+  
+  size_t nread;
+  if (vstate->is_file) {
+    nread = fread(dst, size, nitems, vstate->fp);
+  } else {
+    nread = R_ReadConnection(vstate->inner, dst, n);
+    if (nread != n) {
+      vstate->inner->EOF_signalled = TRUE;
+    }
+  }
   
   return nread;
 }
@@ -420,7 +461,19 @@ int vfile_fgetc(struct Rconn *rconn) {
   vfile_state *vstate = (vfile_state *)rconn->private;
   if (vstate->verbosity > 1) Rprintf("vfile_fgetc()\n");
   
-  int c = fgetc(vstate->fp);
+  int c;
+  
+  if (vstate->is_file) {
+    c = fgetc(vstate->fp);
+  } else {
+    char cchar;
+    size_t nread = rconn->read(&cchar, 1, 1, rconn);
+    if (nread == 0) {
+      c = -1;
+    } else {
+      c = (int)cchar;
+    }
+  }
   
   return c;
 }
@@ -434,7 +487,12 @@ size_t vfile_write(const void *src, size_t size, size_t nitems, struct Rconn *rc
   vfile_state *vstate = (vfile_state *)rconn->private;
   if (vstate->verbosity > 0) Rprintf("vfile_write(size = %zu, nitems = %zu)\n", size, nitems);
  
-  size_t wlen = fwrite(src, 1, size * nitems, vstate->fp);
+  size_t wlen;
+  if (vstate->is_file) {
+    wlen = fwrite(src, 1, size * nitems, vstate->fp);
+  } else {
+    wlen = R_WriteConnection(vstate->inner, (void *)src, size * nitems);
+  }
   
   return wlen;
 }
@@ -490,8 +548,11 @@ int vfile_vfprintf(struct Rconn *rconn, const char* fmt, va_list ap) {
   display_buf[40] = '\0';
   if (vstate->verbosity > 0) Rprintf("vfile_vfprintf('%s ...')\n", display_buf);
   
-  
-  fwrite(str_buf, 1, wlen, vstate->fp);
+  if (vstate->is_file) {
+    fwrite(str_buf, 1, wlen, vstate->fp);
+  } else {
+    R_WriteConnection(vstate->inner, str_buf, wlen);  
+  } 
   
   return wlen;
 }
@@ -510,13 +571,31 @@ SEXP vfile_(SEXP description_, SEXP mode_, SEXP verbosity_) {
   vfile_state *vstate = (vfile_state *)calloc(1, sizeof(vfile_state));
   vstate->verbosity = asInteger(verbosity_);
 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Set information regarding file vs connection handling
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  char *description;
+  if (TYPEOF(description_) == STRSXP) {
+    vstate->is_file = TRUE;
+    description = (char *)CHAR(STRING_ELT(description_, 0));
+  } else {
+    vstate->is_file = FALSE;
+    vstate->inner = R_GetConnection(description_);
+    if (vstate->inner->isopen) {
+      error("vfile_(): inner connection must not already be open");
+    }
+    // Ensure we start with EOF not set, as this is not zeroed in all cases
+    // within R/connections.c
+    vstate->inner->EOF_signalled = FALSE;
+  }
+  
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // R will alloc for 'con' within R_new_custom_connection() and then
   // I think it takes responsibility for freeing it later.
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Rconnection con = NULL;
-  SEXP rc = PROTECT(R_new_custom_connection(CHAR(STRING_ELT(description_, 0)), "rb", "vfile", &con));
+  SEXP rc = PROTECT(R_new_custom_connection(description, "rb", "vfile", &con));
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // text       - true if connection operates on text
