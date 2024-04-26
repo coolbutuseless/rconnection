@@ -9,7 +9,7 @@
 #' This connection works with both ASCII and binary data, e.g. using 
 #' \code{readLines()} and \code{readBin()}.
 #' 
-#' @param description filename
+#' @param description path to filename or a connection object
 #' @param open character string. A description of how to open the connection if 
 #'        it is to be opened upon creation e.g. "rb". Default "" (empty string) means
 #'        to not open the connection on creation - user must still call \code{open()}.
@@ -32,9 +32,14 @@
 #' # readLines(vfile(tmp))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 vfile <- function(description, open = "", verbosity = 1) {
+  
+  if (is.character(description)) {
+    description <- normalizePath(description, mustWork = FALSE)
+  }
+  
   .Call(
     vfile_, 
-    description = normalizePath(description, mustWork = FALSE), 
+    description = description, 
     open        = open,
     verbosity   = verbosity
   )

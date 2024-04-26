@@ -7,7 +7,7 @@
 vfile(description, open = "", verbosity = 1)
 }
 \arguments{
-\item{description}{filename}
+\item{description}{path to filename or a connection object}
 
 \item{open}{character string. A description of how to open the connection if 
 it is to be opened upon creation e.g. "rb". Default "" (empty string) means

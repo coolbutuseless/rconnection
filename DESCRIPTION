@@ -1,7 +1,7 @@
 Package: rconnection
 Type: Package
 Title: Demonstration of Creation of Custom Connection
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Mike", "Cheng", role = c("aut", "cre", 'cph'), email = "mikefc@coolbutuseless.com"),
     person("Matthew", "Shotwell", role = c("aut"), 
