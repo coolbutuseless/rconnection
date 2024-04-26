@@ -402,6 +402,14 @@ struct Rconn {
 * 2016-01-21
     * Duncan Murdoch suggests to `call R from C to do the I/O` for a connection [R-pkg-devel email](https://stat.ethz.ch/pipermail/r-package-devel/2016q1/000648.html)
 
+* 2016-05-03
+    * R v3.3.0 NEWS file notes includes
+
+    "The connections interface now includes a function
+    R_GetConnection() which allows packages implementing connections
+    to convert R connection objects to Rconnection handles. Code
+    which previously used the low-level R-internal getConnection()
+    entry point should switch."
 
 * 2017-06-12
     * Commit message by **ripley** in R source code ["some more non-API entry points"](https://github.com/wch/r-source/commit/e55605767570fc424b6c281e0b7489e8dc77b53f)
