@@ -112,6 +112,8 @@ From [Jeroen Ooms on StackOverflow](https://stackoverflow.com/questions/30445875
 * `{rconnection}` This package! [rconnection on Github](https://github.com/coolbutuseless/rconnection)
 * [zstdlite](https://github.com/coolbutuseless/zstdlite) implements a `zstdfile()` connection for read/write
   of compressed data
+* [rmonocypher](https://github.com/coolbutuseless/rmonocypher) implements a `cryptfile()` 
+  connection for read/write of encypted data
 * [archive](https://cran.r-project.org/package=archive)
 * [curl](https://cran.r-project.org/package=curl)
 * And base R implements: `gzfile()`, `bzfile()`, `xzfile()`, `file()`, `url()`, 
@@ -127,6 +129,31 @@ From [Jeroen Ooms on StackOverflow](https://stackoverflow.com/questions/30445875
 * Matthew S Shotwell's 'R Connection Internals'
     * [html](https://biostatmatt.com/R/R-conn-ints/)
     * [pdf](http://biostatmatt.com/R/R-conn-ints.pdf)
+
+
+## Connection calls may be nested
+
+Some connection objects can themselves read/write to connections e.g.
+base R's `gzcon()` or the `vfile()` connection in this package.
+
+In the following example, the `vfile()` connection will write data
+to a `gzfile()` connection.
+
+```{r}
+tmp <- tempfile()
+writeBin(as.raw(1:10), vfile(gzfile(tmp)))
+```
+
+Connection nesting could be useful for niche ideas like "write compressed, emcrypted data
+to a socket" using:
+
+* `zstdlite::zstdfile()` for compression
+* `rmonocypher::cryptfile()` for encryption
+* `socketConnection()` for writing to a socket
+
+```{r eval = FALSE}
+saveRDS(mtcars, zstdfile(cryptfile(socketConnection(...), key = "my secret")))
+```
 
 
 

@@ -580,6 +580,7 @@ SEXP vfile_(SEXP description_, SEXP mode_, SEXP verbosity_) {
     description = (char *)CHAR(STRING_ELT(description_, 0));
   } else {
     vstate->is_file = FALSE;
+    description = "vfile(connection)";
     vstate->inner = R_GetConnection(description_);
     if (vstate->inner->isopen) {
       error("vfile_(): inner connection must not already be open");

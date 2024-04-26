@@ -59,17 +59,17 @@ ref <- as.raw(1:255)
 writeBin(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpqgBumH/file284e18883ddb', mode = 'wb')
+    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpLJVICU/file169308b4f0df', mode = 'wb')
     #> vfile_write(size = 1, nitems = 255)
-    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpqgBumH/file284e18883ddb')
+    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpLJVICU/file169308b4f0df')
 
 ``` r
 tst <- readBin(vfile(tmp, verbosity = 1),  raw(), 1000)
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpqgBumH/file284e18883ddb', mode = 'rb')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df', mode = 'rb')
     #> vfile_read(size = 1, nitems = 1000)
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpqgBumH/file284e18883ddb')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df')
 
 ``` r
 tst
@@ -103,7 +103,7 @@ ref <- as.character(mtcars)
 writeLines(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpqgBumH/file284e18883ddb', mode = 'wt')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df', mode = 'wt')
     #> vfile_vfprintf('c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3,  ...')
     #> vfile_vfprintf('c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, ...')
     #> vfile_vfprintf('c(160, 160, 108, 258, 360, 225, 360, 146 ...')
@@ -115,14 +115,14 @@ writeLines(ref, vfile(tmp, verbosity = 1))
     #> vfile_vfprintf('c(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...')
     #> vfile_vfprintf('c(4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, ...')
     #> vfile_vfprintf('c(4, 4, 1, 1, 2, 1, 4, 2, 2, 4, 4, 3, 3, ...')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpqgBumH/file284e18883ddb')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df')
 
 ``` r
 tst <- readLines(vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpqgBumH/file284e18883ddb', mode = 'rt')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpqgBumH/file284e18883ddb')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df', mode = 'rt')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpLJVICU/file169308b4f0df')
 
 ``` r
 tst
@@ -169,6 +169,8 @@ StackOverflow](https://stackoverflow.com/questions/30445875/what-exactly-is-a-co
   Github](https://github.com/coolbutuseless/rconnection)
 - [zstdlite](https://github.com/coolbutuseless/zstdlite) implements a
   `zstdfile()` connection for read/write of compressed data
+- [rmonocypher](https://github.com/coolbutuseless/rmonocypher)
+  implements a `cryptfile()` connection for read/write of encypted data
 - [archive](https://cran.r-project.org/package=archive)
 - [curl](https://cran.r-project.org/package=curl)
 - And base R implements: `gzfile()`, `bzfile()`, `xzfile()`, `file()`,
@@ -186,6 +188,34 @@ more.
 - Matthew S Shotwell’s ‘R Connection Internals’
   - [html](https://biostatmatt.com/R/R-conn-ints/)
   - [pdf](http://biostatmatt.com/R/R-conn-ints.pdf)
+
+## Connection calls may be nested
+
+Some connection objects can themselves read/write to connections e.g.
+base R’s `gzcon()` or the `vfile()` connection in this package.
+
+In the following example, the `vfile()` connection will write data to a
+`gzfile()` connection.
+
+``` r
+tmp <- tempfile()
+writeBin(as.raw(1:10), vfile(gzfile(tmp)))
+```
+
+    #> vfile_open('vfile(connection)', mode = 'wb')
+    #> vfile_write(size = 1, nitems = 10)
+    #> vfile_close('vfile(connection)')
+
+Connection nesting could be useful for niche ideas like “write
+compressed, emcrypted data to a socket” using:
+
+- `zstdlite::zstdfile()` for compression
+- `rmonocypher::cryptfile()` for encryption
+- `socketConnection()` for writing to a socket
+
+``` r
+saveRDS(mtcars, zstdfile(cryptfile(socketConnection(...), key = "my secret")))
+```
 
 ## The `Rconn` data structure
 
