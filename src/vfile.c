@@ -540,10 +540,23 @@ SEXP vfile_(SEXP description_, SEXP mode_, SEXP verbosity_) {
   con->blocking   =  TRUE; // blacking IO
   con->isGzcon    = FALSE; // Not a gzcon
   
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // In base R's connections, EOF_signalled is set to zero during 'set_iconv()'
+  // I'm not setting any text conversion stuff, so 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  con->EOF_signalled = FALSE;
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Not sure what this really means, but vfile() is not going to do 
   // any character conversion, so let's pretend any text returned in readLines()
   // is utf8.
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   con->UTF8out =  TRUE; 
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // This private data is user data that will be available in each of the 
+  // following callbacks
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   con->private = vstate;
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
