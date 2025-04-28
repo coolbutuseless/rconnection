@@ -36,6 +36,9 @@ The code to create a connection causes a `NOTE` in `R CMD check` which says:
 As this call to `R_new_connection()` exists in R packages on CRAN, this
 NOTE has been allowed through by CRAN team on some occasions.  Your results may vary.
 
+**Note:** On 2025-04-26 a [change](https://github.com/r-devel/r-svn/commit/8faa279d0f9d61ab644e11cd9808f9274a9020f9) was made to shift connections from "non-API" to "experimental API".  This
+suggests that custom connections may be allowed in CRAN packages in the future (see Timeline below).
+
 ## Installation
 
 You can install the development version of rconnection from [GitHub](https://github.com/coolbutuseless/rconnection) with:
@@ -475,6 +478,20 @@ struct Rconn {
     > agree to disagree. There is really no upside to re-litigating this
     > now.
 
+* 2025-05-26
+    * Kurt Hornik made the following [changes to R source](https://github.com/r-devel/r-svn/commit/8faa279d0f9d61ab644e11cd9808f9274a9020f9)
+        * `R_ext/Connections.h` added to the list of experimental API in `R-exts.texi`
+        * In `library/tools/R/sotools.R` the header `R_ext/Connections.h` was changed from 
+          "non-API" to "experimental API", and the following calls were *removed* 
+          from the list of "non-API" calls
+            * `R_new_custom_connection()`
+            * `R_ReadConnection()`
+            * `R_WriteConnection()`
+            * `R_GetConnection()`
+
+
+# Misc references
+
 * Connections mentioned in [Writing R extensions](https://cran.r-project.org/doc/manuals/R-exts.html)
 
 * In the section on [external pointers](https://cran.r-project.org/doc/manuals/R-exts.html#External-pointers-and-weak-references)
@@ -486,7 +503,6 @@ struct Rconn {
     > Facilities for defining custom connection implementations are 
     > provided in R_ext/Connections.h, but make sure you consult the file 
     > before use. 
-
 
 
 

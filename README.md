@@ -28,6 +28,12 @@ As this call to `R_new_connection()` exists in R packages on CRAN, this
 NOTE has been allowed through by CRAN team on some occasions. Your
 results may vary.
 
+**Note:** On 2025-04-26 a
+[change](https://github.com/r-devel/r-svn/commit/8faa279d0f9d61ab644e11cd9808f9274a9020f9)
+was made to shift connections from “non-API” to “experimental API”. This
+suggests that custom connections may be allowed in CRAN packages in the
+future (see Timeline below).
+
 ## Installation
 
 You can install the development version of rconnection from
@@ -60,17 +66,17 @@ ref <- as.raw(1:255)
 writeBin(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmp05PFDi/file94540320da1', mode = 'wb')
+    #> vfile_open('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpCtfalz/file2f7f1f05b32d', mode = 'wb')
     #> vfile_write(size = 1, nitems = 255)
-    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//Rtmp05PFDi/file94540320da1')
+    #> vfile_close('/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T//RtmpCtfalz/file2f7f1f05b32d')
 
 ``` r
 tst <- readBin(vfile(tmp, verbosity = 1),  raw(), 1000)
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1', mode = 'rb')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpCtfalz/file2f7f1f05b32d', mode = 'rb')
     #> vfile_read(size = 1, nitems = 1000)
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpCtfalz/file2f7f1f05b32d')
 
 ``` r
 tst
@@ -104,7 +110,7 @@ ref <- as.character(mtcars)
 writeLines(ref, vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1', mode = 'wt')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpCtfalz/file2f7f1f05b32d', mode = 'wt')
     #> vfile_vfprintf('c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3,  ...')
     #> vfile_vfprintf('c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, ...')
     #> vfile_vfprintf('c(160, 160, 108, 258, 360, 225, 360, 146 ...')
@@ -116,14 +122,14 @@ writeLines(ref, vfile(tmp, verbosity = 1))
     #> vfile_vfprintf('c(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...')
     #> vfile_vfprintf('c(4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, ...')
     #> vfile_vfprintf('c(4, 4, 1, 1, 2, 1, 4, 2, 2, 4, 4, 3, 3, ...')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpCtfalz/file2f7f1f05b32d')
 
 ``` r
 tst <- readLines(vfile(tmp, verbosity = 1))
 ```
 
-    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1', mode = 'rt')
-    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmp05PFDi/file94540320da1')
+    #> vfile_open('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpCtfalz/file2f7f1f05b32d', mode = 'rt')
+    #> vfile_close('/private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/RtmpCtfalz/file2f7f1f05b32d')
 
 ``` r
 tst
@@ -166,18 +172,18 @@ StackOverflow](https://stackoverflow.com/questions/30445875/what-exactly-is-a-co
 
 ## R Packages which implement connections
 
-| Package     | Connection                                        | Description                                                                     | Notes                     |
-|-------------|---------------------------------------------------|---------------------------------------------------------------------------------|---------------------------|
-| curl        | `curl()`                                          | Drop-in replacement for base url that supports https, ftps, gzip, deflate, etc. |                           |
-| rconnection | `vfile()`                                         | Demonstration package showing how to code connections                           | allows nested connections |
-| zstdlite    | `zstdfile()`                                      | Like `gzfile()` but with Zstandard compression                                  | allows nested connections |
-| rmonocypher | `cryptfile()`                                     | Read/write with added encryption                                                | allows nested connections |
-| base R      | `file()`, `bzfile()`, `gzfile()`, `xzfile()`      | Files and compressed files                                                      |                           |
-| base R      | `gzcon()`                                         | gzipped data read/write to other connections                                    | allows nested connections |
-| base R      | `unz()`                                           | Extract individual files from `*.zip`                                           |                           |
-| base R      | `socketConnection()`, `pipe()`, `fifo()`, `url()` | Non-file endpoints                                                              |                           |
-| base R      | `textConnection()`                                |                                                                                 |                           |
-| base R      | `rawConnection()`                                 |                                                                                 |                           |
+| Package | Connection | Description | Notes |
+|----|----|----|----|
+| curl | `curl()` | Drop-in replacement for base url that supports https, ftps, gzip, deflate, etc. |  |
+| rconnection | `vfile()` | Demonstration package showing how to code connections | allows nested connections |
+| zstdlite | `zstdfile()` | Like `gzfile()` but with Zstandard compression | allows nested connections |
+| rmonocypher | `cryptfile()` | Read/write with added encryption | allows nested connections |
+| base R | `file()`, `bzfile()`, `gzfile()`, `xzfile()` | Files and compressed files |  |
+| base R | `gzcon()` | gzipped data read/write to other connections | allows nested connections |
+| base R | `unz()` | Extract individual files from `*.zip` |  |
+| base R | `socketConnection()`, `pipe()`, `fifo()`, `url()` | Non-file endpoints |  |
+| base R | `textConnection()` |  |  |
+| base R | `rawConnection()` |  |  |
 
 ## Base R functions supporting connections
 
@@ -201,6 +207,14 @@ In the following example, the `vfile()` connection will write data to a
 
 ``` r
 tmp <- tempfile()
+```
+
+    #> vfile_destroy()
+    #> vfile_destroy()
+    #> vfile_destroy()
+    #> vfile_destroy()
+
+``` r
 writeBin(as.raw(1:10), vfile(gzfile(tmp)))
 ```
 
@@ -414,18 +428,13 @@ and included here for posterity.
 ## Timeline of development of connections in R
 
 - 2000-12-02
-
   - Commit message by **ripley** in R source code [“add connections,
     phase
     I”](https://github.com/wch/r-source/blame/trunk/src/main/connections.c#L2)
-
 - 2001 Jan (R v1.2.0)
-
   - Connections announced in [R Newsletter Vol 1, No. 1, January 2001
     (page 16-17)](http://cran.r-project.org/doc/Rnews/Rnews_2001-1.pdf)
-
 - 2002-03-29
-
   - Commit by **luke** in R source code [“Added R_WriteConnection
     function”](https://github.com/wch/r-source/commit/f41e7cc8451afaa62e24b252bd5003528d799e02)
 
@@ -434,30 +443,22 @@ and included here for posterity.
   > It is mainly intended as a means for C code to do a buffered write
   > to sockets, but could be the start of a more extensive C-level
   > connection API. LT
-
 - 2013-01-16
-
   - Commit by **ripley** in R source code [“bigger list of non-API
     calls”](https://github.com/wch/r-source/commit/70a2a36be719dbcd0ada79a7ab47833ccd42819c)
   - `R_WriteConnection()` added to list of non-API calls
-
 - 2013-01-30
-
   - Commit by **ripley** in R source code [“more
     hiding”](https://github.com/wch/r-source/commit/a3b6b31d46f0382d026bec441c345706092dd60d)
   - `R_WriteConnection()` is removed from list of non-API calls
-
 - 2013-02-21
-
   - Commit by **urbaneks** in R source code [“add API to create custom
     connections”](https://github.com/wch/r-source/commit/41b64b12f36851cb87e9132612591d623c217443)
   - `Connections.h` moved from `src/include/Connections.h` to
     `src/include/R_ext/Connections.h`
   - Addition of `R_ReadConnection()`
   - Addition of `R_new_custom_connection()`
-
 - 2013-03-23
-
   - Commit by **urbaneks** in R source code [NEWS.rd “add basic docs for
     r62016”](https://github.com/wch/r-source/commit/085b5940fae119633d9a2583efa4fabfca241fff)
 
@@ -465,15 +466,11 @@ and included here for posterity.
   > outside core R using . Please note that the implementation of
   > connections is still considered internal and may change in the
   > future (see the above file for details).
-
 - 2016-01-21
-
   - Duncan Murdoch suggests to `call R from C to do the I/O` for a
     connection [R-pkg-devel
     email](https://stat.ethz.ch/pipermail/r-package-devel/2016q1/000648.html)
-
 - 2016-05-03
-
   - R v3.3.0 NEWS file notes includes
 
   > “The connections API now includes a function R_GetConnection() which
@@ -481,9 +478,7 @@ and included here for posterity.
   > objects to Rconnection handles used in the API. Code which
   > previously used the low-level R-internal getConnection() entry point
   > should switch to the official API.”
-
 - 2017-06-12
-
   - Commit message by **ripley** in R source code [“some more non-API
     entry
     points”](https://github.com/wch/r-source/commit/e55605767570fc424b6c281e0b7489e8dc77b53f)
@@ -496,9 +491,7 @@ and included here for posterity.
     - `getConnection`
   - This change means that packages submitted to CRAN will receive a
     check `NOTE` if they use these functions
-
 - 2017-06-12
-
   - Commit message by **ripley**: [“there is no connections API,
     official or
     otherwise”](https://github.com/wch/r-source/commit/7e9889fa9bb9269ffadfe67f3ded4bdca51b8ed9)
@@ -510,9 +503,7 @@ and included here for posterity.
   > connection objects to Rconnection handles. Code which previously
   > used the low-level R-internal getConnection() entry point should
   > switch.”
-
 - 2017-06-13
-
   - Gabor Csardi [R-devel
     email](https://stat.ethz.ch/pipermail/r-devel/2017-June/074426.html)
     asked “if package authors are allowed to create custom connections”
@@ -527,9 +518,7 @@ and included here for posterity.
   > CRAN. Although I cannot speak for the author, I suspect this change
   > merely helps to flag where the API is used to follow the trail of
   > breakage in R-devel.
-
 - 2018-06-12
-
   - Joris Meys notes in [R-pkg-devel
     email](https://stat.ethz.ch/pipermail/r-package-devel/2018q2/002811.html)
 
@@ -545,17 +534,13 @@ and included here for posterity.
   > no reply from CRAN one way or the other despite repeated attempts to
   > contact them. Therefore there is no current way for me to update
   > readr on CRAN at this time
-
 - 2024-04-24
-
   - Hadley reflects on the connections API [R-devel
     email](https://stat.ethz.ch/pipermail/r-devel/2024-April/083356.html)
 
   > It was documented in R-exts only to be later removed, including
   > expunging mentions of it in the news.
-
 - 2024-04-24
-
   - Luke Tierney in response to Hadley [R-devel
     email](https://stat.ethz.ch/pipermail/r-devel/2024-April/083363.html)
 
@@ -563,6 +548,20 @@ and included here for posterity.
   > that played out and where that stands now. But there was and is no
   > viable option other than to agree to disagree. There is really no
   > upside to re-litigating this now.
+- 2025-05-26
+  - Kurt Hornik made the following [changes to R
+    source](https://github.com/r-devel/r-svn/commit/8faa279d0f9d61ab644e11cd9808f9274a9020f9)
+    - `R_ext/Connections.h` added to the list of experimental API in
+      `R-exts.texi`
+    - In `library/tools/R/sotools.R` the header `R_ext/Connections.h`
+      was changed from “non-API” to “experimental API”, and the
+      following calls were *removed* from the list of “non-API” calls
+      - `R_new_custom_connection()`
+      - `R_ReadConnection()`
+      - `R_WriteConnection()`
+      - `R_GetConnection()`
+
+# Misc references
 
 - Connections mentioned in [Writing R
   extensions](https://cran.r-project.org/doc/manuals/R-exts.html)
