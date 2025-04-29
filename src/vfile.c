@@ -1,6 +1,5 @@
 
-
-
+#define R_NO_REMAP
 
 #include <R.h>
 #include <Rinternals.h>
@@ -265,13 +264,13 @@ Rboolean vfile_open(struct Rconn *rconn) {
       rconn->description, rconn->mode);
   
   if (rconn->isopen) {
-    error("vfile(): Connection is already open. Cannot open twice");
+    Rf_error("vfile(): Connection is already open. Cannot open twice");
   }
   
   if (strchr(rconn->mode, 'a') != NULL) {
-    error("vfile() does not support append.");
+    Rf_error("vfile() does not support append.");
   } else if (strchr(rconn->mode, '+') != NULL) {
-    error("vfile() does not support simultaneous r/w.");
+    Rf_error("vfile() does not support simultaneous r/w.");
   }
   
   rconn->text   = strchr(rconn->mode, 'b') ? FALSE : TRUE;
@@ -292,28 +291,28 @@ Rboolean vfile_open(struct Rconn *rconn) {
     if (vstate->is_file) {
       vstate->fp = fopen(rconn->description, "rb");
       if (vstate->fp == NULL) {
-        error("vfile_(): Couldn't open input file '%s' with mode '%s'", rconn->description, rconn->mode);
+        Rf_error("vfile_(): Couldn't open input file '%s' with mode '%s'", rconn->description, rconn->mode);
       }
     } else {
       memset(vstate->inner->mode, '\0', 5);
       strcpy(vstate->inner->mode, "rb");
       int res = vstate->inner->open(vstate->inner);
       if (!res || !vstate->inner->isopen) {
-        error("vfile_(): Couldn't open connection for reading");
+        Rf_error("vfile_(): Couldn't open connection for reading");
       }
     }
   } else {
     if (vstate->is_file) {
       vstate->fp = fopen(rconn->description, "wb");
       if (vstate->fp == NULL) {
-        error("vfile_(): Couldn't open output file '%s' with mode '%s'", rconn->description, rconn->mode);
+        Rf_error("vfile_(): Couldn't open output file '%s' with mode '%s'", rconn->description, rconn->mode);
       }
     } else {
       memset(vstate->inner->mode, '\0', 5);
       strcpy(vstate->inner->mode, "wb");
       int res = vstate->inner->open(vstate->inner);
       if (!res || !vstate->inner->isopen) {
-        error("vfile_(): Couldn't open connection for writing");
+        Rf_error("vfile_(): Couldn't open connection for writing");
       }
     }
   }
@@ -394,7 +393,7 @@ int vfile_fgetc_internal(struct Rconn *rconn) {
 //          avoid integer types
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double vfile_seek(struct Rconn *rconn, double x, int y, int z) {
-  error("vfile_seek() - not supported");
+  Rf_error("vfile_seek() - not supported");
   return 0;
 }
 
@@ -403,7 +402,7 @@ double vfile_seek(struct Rconn *rconn, double x, int y, int z) {
 //   - vfile() will not support truncation
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void vfile_truncate(struct Rconn *rconn) {
-  error("vfile_truncate() - not supported");
+  Rf_error("vfile_truncate() - not supported");
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -413,7 +412,7 @@ void vfile_truncate(struct Rconn *rconn) {
 // @return int zero on success. Non-zero otherwise
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int vfile_fflush(struct Rconn *rconn) {
-  error("vfile_fflush() - not supported\n");
+  Rf_error("vfile_fflush() - not supported\n");
   return 1;
 }
 
@@ -533,14 +532,14 @@ int vfile_vfprintf(struct Rconn *rconn, const char* fmt, va_list ap) {
   
   int wlen = slen;
   if (wlen > BUFSIZE) {
-    warning("vfile_vfprintf(): Long string truncated to length = %i\n", BUFSIZE);
+    Rf_warning("vfile_vfprintf(): Long string truncated to length = %i\n", BUFSIZE);
     wlen = BUFSIZE;
   }
 
   
   slen = vsnprintf((char *)(str_buf), BUFSIZE, fmt, ap);
   if (slen < 0) {
-    error("vfile_vfprintf(): error in 'vsnprintf()");
+    Rf_error("vfile_vfprintf(): error in 'vsnprintf()");
   }
   
   unsigned char display_buf[40+1];
@@ -569,7 +568,7 @@ SEXP vfile_(SEXP description_, SEXP mode_, SEXP verbosity_) {
   // Initialize User State
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   vfile_state *vstate = (vfile_state *)calloc(1, sizeof(vfile_state));
-  vstate->verbosity = asInteger(verbosity_);
+  vstate->verbosity = Rf_asInteger(verbosity_);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set information regarding file vs connection handling
@@ -583,7 +582,7 @@ SEXP vfile_(SEXP description_, SEXP mode_, SEXP verbosity_) {
     description = "vfile(connection)";
     vstate->inner = R_GetConnection(description_);
     if (vstate->inner->isopen) {
-      error("vfile_(): inner connection must not already be open");
+      Rf_error("vfile_(): inner connection must not already be open");
     }
     // Ensure we start with EOF not set, as this is not zeroed in all cases
     // within R/connections.c
