@@ -548,7 +548,7 @@ and included here for posterity.
   > that played out and where that stands now. But there was and is no
   > viable option other than to agree to disagree. There is really no
   > upside to re-litigating this now.
-- 2025-05-26
+- 2025-04-26
   - Kurt Hornik made the following [changes to R
     source](https://github.com/r-devel/r-svn/commit/8faa279d0f9d61ab644e11cd9808f9274a9020f9)
     - `R_ext/Connections.h` added to the list of experimental API in
